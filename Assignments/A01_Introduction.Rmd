@@ -22,7 +22,7 @@ The completed exercise is due on <>.
 
 1. What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
 
-> Answer: I briefly used R and Git during undergrad, but I have not used it for the last 5+ years. 
+> Answer: I briefly used R and Git during undergrad, but I have not used it for the last 5+ years. I have taken data analytics courses at UNC, but I used either Excel or JMP. 
 
 2. Are there any components of the course about which you feel confident?
 
