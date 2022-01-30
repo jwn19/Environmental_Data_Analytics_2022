@@ -25,7 +25,7 @@ Opening discussion: why might we be interested in long-term observations of temp
 getwd()
 #install.packages(tidyverse)
 library(tidyverse)
-#install.packages(lubridate)
+install.packages(lubridate)
 library(lubridate)
 NTL.phys.data <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv", stringsAsFactors = TRUE)
 
@@ -33,11 +33,15 @@ colnames(NTL.phys.data)
 head(NTL.phys.data)
 summary(NTL.phys.data)
 str(NTL.phys.data)
+#sample data recorded as character. need to fix
 dim(NTL.phys.data)
 
 class(NTL.phys.data$sampledate)
 # Format sampledate as date
 NTL.phys.data$sampledate <- as.Date(NTL.phys.data$sampledate, format = "%m/%d/%y")
+head(NTL.phys.data$sampledate)
+#dont need to worry about century cutoff
+
 ```
 
 ## Data Wrangling
@@ -99,6 +103,8 @@ NTL.phys.data.PeterPaul2 <- filter(NTL.phys.data, lakename != "Central Long Lake
                                      lakename != "Hummingbird Lake" & lakename != "Tuesday Lake" &
                                      lakename != "Ward Lake" & lakename != "West Long Lake")
 NTL.phys.data.PeterPaul3 <- filter(NTL.phys.data, lakename %in% c("Paul Lake", "Peter Lake"))
+#useful when you want to filter multiple selections but dont want to type lakename over and over again
+
 
 # Choose a range of conditions of a numeric or integer variable
 summary(NTL.phys.data$daynum)
@@ -111,9 +117,12 @@ NTL.phys.data.JunethruOctober4 <- filter(NTL.phys.data, daynum %in% c(152:304))
 # filter NTL.phys.data for the year 1999
 # what code do you need to use, based on the class of the variable?
 class(NTL.phys.data$year4)
+NTL.phys.data.1999 <- filter(NTL.phys.data, year4 == 1999)
+view(NTL.phys.data.1999)
 
 # Exercise: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
+NTL.phys.data.Tuesday90_99 <- filter(NTL.phys.data, year4 >= 1990 & year4 <= 1999, lakename == "Tuesday Lake")
 
 
 ```
@@ -167,6 +176,8 @@ NTL.phys.data.PeterPaul1 <- select(NTL.phys.data.PeterPaul1, lakeid:daynum, mont
 # find out the start and end dates of the dataset
 interval(NTL.phys.data.PeterPaul1$sampledate[1], NTL.phys.data.PeterPaul1$sampledate[21613])
 interval(first(NTL.phys.data.PeterPaul1$sampledate), last(NTL.phys.data.PeterPaul1$sampledate))
+#second option better way to go about it 
+
 ```
 
 
