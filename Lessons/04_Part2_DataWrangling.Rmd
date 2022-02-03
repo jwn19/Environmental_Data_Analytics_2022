@@ -44,7 +44,7 @@ colnames(NTL.nutrient.data.PeterPaul)
 dim(NTL.nutrient.data.PeterPaul)
 str(NTL.nutrient.data.PeterPaul)
 summary(NTL.nutrient.data.PeterPaul$lakename) 
-# Notice that other lake names didn't go away, even though they have zero values
+# Notice that other lake names didn't go away, even though they have zero values. Have to use droplevels function to only show Peter and Paul lakes in summary 
 NTL.nutrient.data.PeterPaul <- droplevels(NTL.nutrient.data.PeterPaul)
 summary(NTL.nutrient.data.PeterPaul$lakename)
 summary(NTL.nutrient.data.PeterPaul$comments)

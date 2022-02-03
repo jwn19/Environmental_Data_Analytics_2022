@@ -48,19 +48,33 @@ NTL.phys.data.surface <- filter(NTL.phys.data, depth == 0)
 
 # Choose multiple conditions to filter
 summary(NTL.phys.data$lakename)
+unique(NTL.phys.data$lakename)## different way of seeing lakenames
 NTL.phys.data.PeterPaul <- filter(NTL.phys.data, lakename %in% c("Paul Lake", "Peter Lake"))
 
 # Choose a range of conditions of a numeric or integer variable
-summary(NTL.phys.data$daynum)
+summary(NTL.phys.data$daynum)## cant list unique values bc numeric 
 NTL.phys.data.JunethruOctober <- filter(NTL.phys.data, daynum %in% c(152:304))
 
 # Exercise 1: 
 # filter NTL.phys.data for the year 1999
 # what code do you need to use, based on the class of the variable?
 
+NLT.phys.data.1999 <- filter(NTL.phys.data, year4 == 1999)
+
+
 
 # Exercise 2: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
+
+NLT.phys.data.90_99 <- filter(NTL.phys.data, year4 >= 1990 & year4 <=1999 & lakename == "Tuesday Lake")
+
+## use & instead of commas
+
+NTL.phys.data.90.99.2 <- 
+  NTL.phys.data %>%
+  filter(year4 %in% c(1990:1999)) %>%
+  filter(lakename == "Tuesday Lake")
+
 
 
 ```
@@ -83,11 +97,34 @@ NTL.phys.data.processed <-
 
 #Exercise 3: Using a pipe filter NTL.phys.data for Tuesday Lake from 1990 through 1999 only for July 
 
+NTL.phys.data.July <- 
+  NTL.phys.data %>% 
+  mutate(month = month(sampledate)) %>%
+  filter(lakename == "Tuesday Lake") %>%
+  filter(year4 %in% c(1990:1999)) %>%
+  filter(month == 07)
 
+## different way to do it 
+
+NTL.phys.data.July.2 <- 
+  NTL.phys.data %>% 
+  filter(month(sampledate)==7) %>%
+  filter(lakename == "Tuesday Lake") %>%
+  filter(year4 %in% 1990:1999) 
 
 
 
 #Exercise 4: Using the data from part 3, a pipe and the summarise() function find the mean surface temperature (hints: you will need to add another filter for depth==0). Make sure you eliminate NAs before computing the means
+
+NTL.phys.data.July.summaries <- 
+  NTL.phys.data.July %>%
+  filter(depth == 0) %>%
+  filter(!is.na(temperature_C)) %>%
+  summarise(meantemp = mean(temperature_C))
+
+
+## drop na when look at every row, find null values, then eliminate those rows
+## a more subtle way to do it is is.na, will ask value in temp column and see if null, if so will filter out 
 
   
 ```
@@ -100,7 +137,21 @@ For gather we will use `pivot_longer` and for spread we will use `pivot_wider`.
 #Exercise 5: gather irradiance data (measured in the water column and measured on the deck of the sampling boat) into one column using pivot_longer
 
 
+NTL.phys.data.longer <- pivot_longer(NTL.phys.data, irradianceWater:irradianceDeck, names_to = "irradiance_type", values_to = "irradiance")
+
+
+
 #Exercise 6: spread temperatureC into more than one column based on the depth
+
+NTL.phys.data.wider <- 
+  NTL.phys.data.longer %>%
+  pivot_wider(names_from = irradiance_type, values_from = irradiance)
+  
+exercise6 <- 
+  NTL.phys.data %>%
+  select(1:7) %>%
+  pivot_wider(names_from = depth, values_from = temperature_C)
+
 
 ```
 
