@@ -1,8 +1,10 @@
 ---
 title: "Assignment 4: Data Wrangling"
-author: "Student Name"
+author: "Jon Nichols"
 output: pdf_document
 geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
 ---
 
 ## OVERVIEW
@@ -25,8 +27,29 @@ The completed exercise is due on Monday, Feb 7 @ 7:00pm.
 
 ```{r, message = FALSE}
 #1
+getwd()
+library(tidyverse)
+library(lubridate)
+EPAair_O3_NC2018 <- read.csv("./Data/Raw/EPAair_O3_NC2018_raw.csv", stringsAsFactors = TRUE)
+EPAair_O3_NC2019 <- read.csv("./Data/Raw/EPAair_O3_NC2019_raw.csv", stringsAsFactors = TRUE)
+EPAair_PM25_NC2018 <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv", stringsAsFactors = TRUE)
+EPAair_PM25_NC2019 <- read.csv("./Data/Raw/EPAair_PM25_NC2019_raw.csv", stringsAsFactors = TRUE)
 
 #2
+
+dim(EPAair_O3_NC2018)
+dim(EPAair_O3_NC2019)
+dim(EPAair_PM25_NC2018)
+dim(EPAair_PM25_NC2019)
+colnames(EPAair_O3_NC2018)
+colnames(EPAair_O3_NC2019)
+colnames(EPAair_PM25_NC2018)
+colnames(EPAair_PM25_NC2019)
+str(EPAair_O3_NC2018)
+str(EPAair_O3_NC2019)
+str(EPAair_PM25_NC2018)
+str(EPAair_PM25_NC2019)
+
 ```
 
 ## Wrangle individual datasets to create processed files.
@@ -38,11 +61,40 @@ The completed exercise is due on Monday, Feb 7 @ 7:00pm.
 ```{r}
 #3
 
+EPAair_O3_NC2018$Date <- as.Date(EPAair_O3_NC2018$Date, format = "%m/%d/%Y")
+EPAair_O3_NC2019$Date <- as.Date(EPAair_O3_NC2019$Date, format = "%m/%d/%Y")
+EPAair_PM25_NC2018$Date <- as.Date(EPAair_PM25_NC2018$Date, format = "%m/%d/%Y")
+EPAair_PM25_NC2019$Date <- as.Date(EPAair_PM25_NC2019$Date, format = "%m/%d/%Y")
+
 #4
+
+EPAair_O3_NC2018_subset <- 
+  EPAair_O3_NC2018 %>%
+  select(Date, DAILY_AQI_VALUE,Site.Name,AQS_PARAMETER_DESC,COUNTY,SITE_LATITUDE,SITE_LONGITUDE)
+
+EPAair_O3_NC2019_subset <- 
+  EPAair_O3_NC2019 %>%
+  select(Date, DAILY_AQI_VALUE,Site.Name,AQS_PARAMETER_DESC,COUNTY,SITE_LATITUDE,SITE_LONGITUDE)
+  
+EPAair_PM25_NC2018_subset <- 
+  EPAair_PM25_NC2018 %>%
+  select(Date, DAILY_AQI_VALUE,Site.Name,AQS_PARAMETER_DESC,COUNTY,SITE_LATITUDE,SITE_LONGITUDE)
+
+EPAair_PM25_NC2019_subset <- 
+  EPAair_PM25_NC2019 %>%
+  select(Date, DAILY_AQI_VALUE,Site.Name,AQS_PARAMETER_DESC,COUNTY,SITE_LATITUDE,SITE_LONGITUDE)
 
 #5
 
+EPAair_PM25_NC2018_subset$AQS_PARAMETER_DESC = "PM2.5"
+EPAair_PM25_NC2019_subset$AQS_PARAMETER_DESC = "PM2.5"
+
 #6
+
+write.csv(EPAair_O3_NC2018_subset, row.names = FALSE, file = "./Data/Processed/EPAair_03_NC2018_processed.csv")
+write.csv(EPAair_O3_NC2019_subset, row.names = FALSE, file = "./Data/Processed/EPAair_03_NC2019_processed.csv")
+write.csv(EPAair_PM25_NC2018_subset, row.names = FALSE, file = "./Data/Processed/EPAair_PM25_NC2018_processed.csv")
+write.csv(EPAair_PM25_NC2019_subset, row.names = FALSE, file = "./Data/Processed/EPAair_PM25_NC2019_processed.csv")
 
 ```
 
@@ -63,13 +115,36 @@ The completed exercise is due on Monday, Feb 7 @ 7:00pm.
 ```{r}
 #7
 
+EPAair_Combined <- rbind(EPAair_O3_NC2018_subset, EPAair_O3_NC2019_subset, EPAair_PM25_NC2018_subset, EPAair_PM25_NC2019_subset) 
+
 #8
+
+EPAair_Combined_commonsites <- 
+  EPAair_Combined%>%
+  filter(Site.Name %in% c("Linville Falls", "Durham Armory", "Leggett", "Hattie Avenue", "Clemmons Middle", "Mendenhall School", "Frying Pan Mountain", "West Johnston Co.", "Garinger High School", "Castle Hayne", "Pitt Agri. Center", "Bryson City", "Millbrook School"))%>%
+  group_by(Date, Site.Name, AQS_PARAMETER_DESC, COUNTY) %>%
+  summarise(meanAQI = mean(DAILY_AQI_VALUE), 
+            meanlatitude = mean(SITE_LATITUDE), 
+            meanlongitude = mean(SITE_LONGITUDE))%>%
+  mutate(Month = month(Date))%>%
+  mutate(Year = year(Date))
+
+dim(EPAair_Combined_commonsites)
 
 #9
 
+EPAair_Combined_spread <- 
+  EPAair_Combined_commonsites %>%
+  pivot_wider(names_from = AQS_PARAMETER_DESC, values_from = meanAQI)
+
 #10
 
+dim(EPAair_Combined_spread)
+
 #11
+
+write.csv(EPAair_Combined_spread, row.names = FALSE, file = "./Data/Processed/EPAair_O3_PM25_NC2122_Processed.csv")
+
 
 ```
 
@@ -85,11 +160,29 @@ The completed exercise is due on Monday, Feb 7 @ 7:00pm.
 ```{r}
 #12(a,b)
 
+EPAair_Summary <- 
+  EPAair_Combined_spread%>%
+  group_by(Site.Name, Month, Year) %>%
+  summarise(meanAQI_O3 = mean(Ozone), 
+            meanAQI_PM2.5 = mean(PM2.5))
+  
+EPAair_Summary_clean <- 
+  EPAair_Combined_spread%>%
+  group_by(Site.Name, Month, Year) %>%
+  summarise(meanAQI_O3 = mean(Ozone), 
+            meanAQI_PM2.5 = mean(PM2.5))%>%
+  filter(is.na(meanAQI_O3&meanAQI_PM2.5))
+
+
+
+ 
 
 #13
+
+dim(EPAair_Summary_clean)
 
 ```
 
 14. Why did we use the function `drop_na` rather than `na.omit`?
 
-> Answer: 
+> Answer: I used is.na because the drop.na function would not let me use an & operator. I am unsure why we would use drop_na rather than na.omit, other than because it is a tidyverse function. 

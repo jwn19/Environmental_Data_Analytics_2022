@@ -88,13 +88,14 @@ print(O3plot)
 # Fix this code
 O3plot2 <- ggplot(EPAair) +
   #geom_point(aes(x = Date, y = Ozone, color = "blue"))
+  ### have to put color outside of aes 
   geom_point(aes(x = Date, y = Ozone), color = "blue")
 print(O3plot2)
 
 # Add additional variables
 # How could you automatically assign a marker color to a variable? 
 PMplot <- 
-  ggplot(EPAair, aes(x = Month, y = PM2.5, shape = as.factor(Year), color = Site.Name)) +
+  ggplot(EPAair, aes(x = Month, y = PM2.5, shape = as.factor(Year), color = Site.Name)) + # color assigned to a variable, now inside aes, X is now month
   geom_point()
 print(PMplot)
 
@@ -120,6 +121,7 @@ PMplot.line <-
          aes(x = Date, y = PM2.5)) +
   geom_line()
 print(PMplot.line)
+#changed x back to date 
 
 
 ```
@@ -147,14 +149,14 @@ tempvsdepth <-
   ggplot(PeterPaul.chem.nutrients, aes(x = temperature_C, y = depth)) +
   #ggplot(PeterPaul.chem.nutrients, aes(x = temperature_C, y = depth, color = daynum)) +
   geom_point() +
-  scale_y_reverse()
+  scale_y_reverse() #if dont use this, will go from 0 to max, but depth is on a reverse scale, so want 0 on top and deepest on bottom part of y axis
 print(tempvsdepth)
 
 NvsP <-
   ggplot(PeterPaul.chem.nutrients, aes(x = tp_ug, y = tn_ug, color = depth)) +
   geom_point() +
   geom_smooth(method = lm) +
-  geom_abline(aes(slope = 16, intercept = 0))
+  geom_abline(aes(slope = 16, intercept = 0)) # if you knew slope and intercept 
 print(NvsP)
 
 ```
@@ -168,15 +170,17 @@ What might be more effective ways to display the information? Navigate to the bo
 # Box and whiskers plot
 Nutrientplot3 <-
   ggplot(PeterPaul.chem.nutrients.gathered, aes(x = lakename, y = concentration)) +
-  geom_boxplot(aes(color = nutrient)) # Why didn't we use "fill"?
+  geom_boxplot(aes(color = nutrient)) # Why didn't we use "fill"? - fill just changes fill of box plot, but contour remains black. color is way to go when working with boxplots 
 print(Nutrientplot3)
+# much better than bar with error 
 
 # Dot plot
 Nutrientplot4 <-
   ggplot(PeterPaul.chem.nutrients.gathered, aes(x = lakename, y = concentration)) +
-  geom_dotplot(aes(color = nutrient, fill = nutrient), binaxis = "y", binwidth = 1, 
-               stackdir = "center", position = "dodge", dotsize = 2) #
+  geom_dotplot(aes(color = nutrient, fill = nutrient), binaxis = "y", binwidth = 1, #stacking observations over y
+               stackdir = "center", position = "dodge", dotsize = 2) 
 print(Nutrientplot4)
+#stacking points based on center position. position dodge making observations at same concentration go to side rather than overlay each other 
 
 # Violin plot
 Nutrientplot5 <-
@@ -195,16 +199,19 @@ Nutrientplot6 <-
   geom_freqpoly(aes(x = po4), color = "red") 
 print(Nutrientplot6)
 
-# Using a gathered dataset
+#^example of not a good plot 
+
+# Using a gathered dataset, better example 
 Nutrientplot7 <-   
   ggplot(PeterPaul.chem.nutrients.gathered) +
   geom_freqpoly(aes(x = concentration, color = nutrient))
 print(Nutrientplot7)
+#because we gathered nutrients in these two columns, much easier 
 
 # Frequency polygons have the risk of becoming spaghetti plots. 
 # See <https://www.data-to-viz.com/caveat/spaghetti.html> for more info.
 
-# Ridgeline plot
+# Ridgeline plot, will show density of distribution over time 
 Nutrientplot6 <-
   ggplot(PeterPaul.chem.nutrients.gathered, aes(y = nutrient, x = concentration)) +
   geom_density_ridges(aes(fill = lakename), alpha = 0.5) #
