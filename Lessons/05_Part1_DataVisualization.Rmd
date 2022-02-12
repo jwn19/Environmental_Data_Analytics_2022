@@ -121,7 +121,7 @@ PMplot.line <-
          aes(x = Date, y = PM2.5)) +
   geom_line()
 print(PMplot.line)
-#changed x back to date 
+#changed x back to date bc line is a continuous variable, so have to use Data and not month
 
 
 ```
