@@ -76,6 +76,7 @@ irradiance.regression <- lm(PeterPaul.chem.nutrients$irradianceWater ~ PeterPaul
 
 # another way to format the lm() function
 irradiance.regression <- lm(data = PeterPaul.chem.nutrients, irradianceWater ~ depth)
+#preferred way since dont have to type out dataset repeatedly
 summary(irradiance.regression)
 
 # Correlation
@@ -99,7 +100,12 @@ An exploratory option to visualize the model fit is to use the function `plot`. 
 
 ```{r, fig.height = 3, fig.width = 4}
 par(mfrow = c(2,2), mar=c(4,4,4,4))
+#divides plot window into 2x2, second part is for sizes
 plot(irradiance.regression)
+#first plot, looking for symmetry based on red line and want red line to be as flat as possible
+#for QQ, dashed line is for normal distribution, want black circle to fall within dashed lines, lower ends and higher ends may deviate a little, does not necessarily mean residuals are not normal
+#third plot, looking for symmetry again 
+#
 par(mfrow = c(1,1))
 ```
 

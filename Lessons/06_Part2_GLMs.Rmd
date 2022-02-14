@@ -45,10 +45,12 @@ summary(Litter.Totals)
 #check all value of plotID
 summary(Litter.Totals$plotID)
 
-# Test for normality. 
+# Test for normality. It was one of the assumptions. 
 # Note: the important assumption for GLMs is normality of residuals, 
 # not necessarily normality of raw data. See below when we plot the model.
 # shapiro.test() performs the Shapiro-Wilk test of the null that data follows a normal distribution
+#Most nulls are rejected. Do not follow a normal distribution. does not mean you cannot run a one way anova test
+#for shapiro test, have to call an object, then filter
 
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_040"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_041"])
@@ -64,16 +66,20 @@ shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_064"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_067"])
 
 #results: reject null in all except two: NIWO_057 and NIWO_046
+#another way to check for normality 
 qqnorm(Litter.Totals$dryMass); qqline(Litter.Totals$dryMass)
+#can see data does not follow normal distribution
 
 # Test for equal variance
 # ANOVA is robust against departures from equal variance.
 # bartlett.test() performs Bartlett's test of the null that the variances in each of the groups (samples) are the same.
+#can still run anova if false
 bartlett.test(Litter.Totals$dryMass ~ Litter.Totals$plotID)
 
 #results: reject null i.e. variances are not equal
 
 # Format ANOVA as aov
+#continuous variable then categorical variable
 Litter.Totals.anova <- aov(data = Litter.Totals, dryMass ~ plotID)
 summary(Litter.Totals.anova)
 
@@ -82,6 +88,9 @@ summary(Litter.Totals.anova)
 # Format ANOVA as lm
 Litter.Totals.anova2 <- lm(data = Litter.Totals, dryMass ~ plotID)
 summary(Litter.Totals.anova2)
+#shows number of factors (degrees of freedom +1), p value is less than 0.05, reject null, which is the mean is the same for all plot id's, so we are saying that they are not all the same 
+#it is not telling us which pair of means are not the same
+#have to run other tests 
 
 # Checking model fit and assumptions
 # ANOVA is robust against departures from normality.
@@ -89,11 +98,18 @@ plot(Litter.Totals.anova2)
 
 # Post-hoc test
 # TukeyHSD() computes Tukey Honest Significant Differences
+#runs through all 12 pairs against each other 
+#shows difference between means 
 TukeyHSD(Litter.Totals.anova)
 
+#follow up for tukeyhsd test 
 # Extract groupings for pairwise relationships
 Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE)
+
+#group = true saying group levels with same mean 
 Litter.Totals.groups
+
+#groups with same letter are not significantly different, indicating same mean. 
 
 # Graph the results
 Litter.Totals.plot <- ggplot(Litter.Totals, aes(x = plotID, y = dryMass)) +
@@ -105,11 +121,14 @@ Litter.Totals.plot <- ggplot(Litter.Totals, aes(x = plotID, y = dryMass)) +
   labs(x = "Plot ID", y = "Dry Mass (g)") +
   ylim(0, 85)
 print(Litter.Totals.plot)
+
+#
+
 ```
 
 What information does the output give us? How might we report this information in a report?
 
-> 
+> first thing to do is reorder sites according to previous groups list. 
 
 ## TWO-WAY ANOVA
 ### Main effects
@@ -120,9 +139,16 @@ A two-way ANOVA allows us to examine the effects of two categorical explanatory 
 Litter.anova.2way <- aov(data = Litter, dryMass ~ functionalGroup + nlcdClass)
 summary(Litter.anova.2way)
 
+#reject null hypothesis, mean of our groups is different
+
+#looking at 2 categorical variables on a continuous response variable 
+
 # Format as lm
 Litter.anova.2way2 <- lm(data = Litter, dryMass ~ functionalGroup + nlcdClass)
 summary(Litter.anova.2way2)
+
+#same result
+
 
 # Run a post-hoc test for pairwise differences
 TukeyHSD(Litter.anova.2way)
@@ -137,7 +163,10 @@ The output gives test statistics for each explanatory variable as well as the in
 ```{r}
 # Format as aov
 Litter.anova.2way3 <- aov(data = Litter, dryMass ~ functionalGroup * nlcdClass)
+#using times to see interaction 
 summary(Litter.anova.2way3)
+
+#p value less than 0.05, interaction is significant 
 
 # Format as lm
 Litter.anova.2way4 <- lm(data = Litter, dryMass ~ functionalGroup * nlcdClass)
@@ -150,14 +179,22 @@ If the interaction is significant, we interpret pairwise differences for the int
 # Run a post-hoc test for pairwise differences
 TukeyHSD(Litter.anova.2way3)
 
+#now want to find treatment groups like we did with one way anova
+#will have 24 levels bc of interaction with functional group and class
+
 Litter.interaction <- with(Litter, interaction(functionalGroup, nlcdClass))
 
-#Litter.test <- cbind(Litter,Litter.interaction)
+#cbind used as example to show  what we are doing. dont need to create this
+
+Litter.test <- cbind(Litter,Litter.interaction)
 
 Litter.anova.2way5 <- aov(data = Litter, dryMass ~ Litter.interaction)
+#comparing means for each one of 24 interaction levels. technically a one way inova, but based on interaction of two categorical variables
+
 
 Litter.groups <- HSD.test(Litter.anova.2way5, "Litter.interaction", group = TRUE)
 Litter.groups
+
 
 # Plot the results
 # Edit this graph to make it more visually appealing.
