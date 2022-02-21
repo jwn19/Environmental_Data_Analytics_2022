@@ -75,11 +75,12 @@ Are Ozone levels below the threshold for "good" AQI index (0-50)?
 summary(EPAair$Ozone)
 EPAair.subsample <- sample_n(EPAair, 5000)
 
-# Evaluate assumption of normal distribution
+# Evaluate assumption of normal distribution. reject the null (that it is normal, so we are actually saying it is nonnormal )
 shapiro.test((EPAair.subsample$Ozone))
 ggplot(EPAair, aes(x = Ozone)) +
   geom_histogram() 
 qqnorm(EPAair$Ozone); qqline(EPAair$Ozone)
+#looks bimodal 
 
 O3.onesample <- t.test(EPAair$Ozone, mu = 50, alternative = "less")
 O3.onesample
@@ -104,6 +105,7 @@ The two-sample *t* test is used to test the hypothesis that the mean of two samp
 shapiro.test(EPAair$Ozone[EPAair$Year == 2018])
 shapiro.test(EPAair$Ozone[EPAair$Year == 2019])
 
+
 #p-value less than 0.05 then reject null for 2018 and 2019 i.e. data do not follow normal distribution
 
 #Compare variance using F-test (only)
@@ -124,6 +126,7 @@ O3.twosample2 <- lm(EPAair$Ozone ~ EPAair$Year)
 summary(O3.twosample2)
 
 plot(O3.twosample2)
+
 
 
 ```
