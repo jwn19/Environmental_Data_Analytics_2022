@@ -70,6 +70,7 @@ Are Ozone levels below the threshold for "good" AQI index (0-50)?
 
 
 ```{r}
+nb
 
 
 summary(EPAair$Ozone)
@@ -86,8 +87,8 @@ O3.onesample <- t.test(EPAair$Ozone, mu = 50, alternative = "less")
 O3.onesample
 
 Ozone.plot <- ggplot(EPAair, aes(x = Ozone)) +
-  #geom_density(stat = "count", fill = "gray") +
-  geom_density(fill = "gray") +
+  geom_density(stat = "count", fill = "gray") +
+  #geom_density(fill = "gray") +
   geom_vline(xintercept = 50, color = "#238b45", lty = 2, size = 0.9) +
   scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0))
 print(Ozone.plot)
@@ -129,6 +130,7 @@ plot(O3.twosample2)
 
 
 
+
 ```
 
 
@@ -155,6 +157,32 @@ Create three plots, each with appropriately formatted axes and legends. Choose a
 ```{r}
 #Exercise 2:
 
+year1819 <- as.factor(EPAair$Year)
+
+Density <- ggplot(EPAair, aes(x = Ozone)) +
+ geom_density(aes(fill = year1819, alpha = 0.5))
+print(Density)
+
+# better way to do it
+
+ggplot(EPAair, aes(x=Ozone, fill=as.factor(Year)))+
+  geom_density(alpha=0.5)+
+  labs(title = "Density Plot: Ozone by Year",
+       x = "Ozone AQI Value",
+       y = "Density",
+       fill = "Year")+
+  scale_fill_manual(values = c("blue","yellow"))
+
+
+ggplot(EPAair, aes(x = as.factor(Year), y = Ozone))+
+  geom_boxplot()+
+  stat_summary(geom = "text", fun.y = max, vjust = -1, size = 4,
+               label = c("a", "b"), color = "red")+
+  labs(x="", y = "Ozone AQI value")+
+  ylim(0,150)
+
+
+
 
 ```
 
@@ -168,10 +196,29 @@ For the NTL-LTER dataset, can we predict PM2.5 from Ozone?
 
 #Exercise 3: Run a linear regression PM2.5 by Ozone. Find the p-value and R-squared value. 
 
+summary(EPAair$Ozone)
 
+
+
+epa.regression <- lm(data = EPAair, PM2.5 ~ Ozone)
+summary(epa.regression)
+
+
+EPA2 <- EPAair %>%
+  na.omit()
+
+epa.regression2 <- lm(data = EPA2, PM2.5 ~ Ozone)
+summary(epa.regression2)
 
 #Exercise 4: Build a scatterplot. Add a line and standard error for the linear regression. 
 
+pm25byozone <- 
+  ggplot(EPAair, aes(x = Ozone, y = PM2.5)) +
+  geom_point() +
+  geom_smooth(method = lm, se=FALSE)+
+  ylab("PM 2.5")+
+  xlab("Ozone")
+print(pm25byozone)
 
 
 ```
@@ -185,15 +232,23 @@ What other variables can we add to improve model?
 
 #Exercise 5: Build correlation plots and identify more possible explanatory variables to add to the regression.
 
+the_cor <- cor(EPAair %>% select(meanLat:Ozone)%>% drop_na())
 
 
 
 #Exercise 6: Choose a model by AIC in a Stepwise Algorithm. Do the results from AIC match the variables you selected on Exercise 5?
 
+library(corrplot)
+corrplot(the_cor, method = "ellipse")
+corrplot.mixed(the_cor, upper = "ellipse")
+
+
 
 
 
 #Exercise 7: Run another regression using the variables selected on Exercise 6. Compare r-squared value with the one from Exercise 5. 
+
+
 
 ```
 
